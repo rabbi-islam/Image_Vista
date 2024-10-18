@@ -14,13 +14,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +42,7 @@ import com.example.imagevista.presentation.component.DownloadOptionBottomSheet
 import com.example.imagevista.presentation.component.FullImageViewTopBar
 import com.example.imagevista.presentation.component.ImageDownloadOption
 import com.example.imagevista.presentation.component.ImageVistaLoadingBar
+import com.example.imagevista.presentation.util.SnackBarEvent
 import com.example.imagevista.presentation.util.rememberWindowInsetsController
 import com.example.imagevista.presentation.util.toggleStatusBars
 import kotlinx.coroutines.launch
@@ -55,6 +51,8 @@ import kotlin.math.max
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FullImageScreen(
+    snackbarHostState:SnackbarHostState,
+    snackBarEvent: kotlinx.coroutines.flow.Flow<SnackBarEvent>,
     image: UnsplashImage?,
     onBackArrowClick: () -> Unit,
     onPhotographerImageClick: (String) -> Unit,
@@ -67,6 +65,15 @@ fun FullImageScreen(
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         var isDownloadBottomSheetOpen by remember { mutableStateOf(false) }
         val context = LocalContext.current
+
+        LaunchedEffect(key1 = true) {
+            snackBarEvent.collect{event->
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = event.duration
+                    )
+            }
+        }
 
         LaunchedEffect(key1 = Unit) {
             windowInsetsController.toggleStatusBars(show = showBars)
@@ -127,6 +134,7 @@ fun FullImageScreen(
                 painter = if (isError.not()) imageLoader else painterResource(id = R.drawable.ic_error),
                 contentDescription = null,
                 modifier = Modifier
+                    .fillMaxSize()
                     .transformable(transformState)
                     .combinedClickable(
                         onDoubleClick = {

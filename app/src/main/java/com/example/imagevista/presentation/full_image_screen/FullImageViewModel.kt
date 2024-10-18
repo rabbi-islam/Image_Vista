@@ -11,8 +11,12 @@ import com.example.imagevista.domain.model.UnsplashImage
 import com.example.imagevista.domain.repository.Downloader
 import com.example.imagevista.domain.repository.ImageRepository
 import com.example.imagevista.presentation.navigation.Routes
+import com.example.imagevista.presentation.util.SnackBarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +27,11 @@ class FullImageViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val imageId = saveStateHandle.toRoute<Routes.FullImageScreen>().imageId
+
+    private val _snackBarEvent = Channel<SnackBarEvent>()
+    val snackBarEvent = _snackBarEvent.receiveAsFlow()
+
+
     var image by mutableStateOf<UnsplashImage?>(null)
         private set
 
@@ -35,8 +44,11 @@ class FullImageViewModel @Inject constructor(
             try {
                 val result = repository.getImage(imageId)
                 image = result
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: UnknownHostException) {
+                _snackBarEvent.send(SnackBarEvent(message = "No Internet Connection."))
+            }
+            catch (e: Exception) {
+                _snackBarEvent.send(SnackBarEvent(message = "Something Went Wrong: ${e.message}"))
             }
 
         }
@@ -49,7 +61,7 @@ class FullImageViewModel @Inject constructor(
             try {
                 downloader.downloadFile(url, fileName)
             } catch (e: Exception) {
-                e.printStackTrace()
+                _snackBarEvent.send(SnackBarEvent(message = "Something Went Wrong: ${e.message}"))
             }
         }
     }
