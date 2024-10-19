@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.imagevista.presentation.favourite_screen.FavouriteScreen
 import com.example.imagevista.presentation.full_image_screen.FullImageScreen
 import com.example.imagevista.presentation.full_image_screen.FullImageViewModel
@@ -16,13 +17,16 @@ import com.example.imagevista.presentation.home_screen.HomeScreen
 import com.example.imagevista.presentation.home_screen.HomeViewModel
 import com.example.imagevista.presentation.profile_screen.ProfileScreen
 import com.example.imagevista.presentation.search_screen.SearchScreen
+import com.example.imagevista.presentation.search_screen.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavGraphSetup(
     navController: NavHostController,
     scrollBehavior: TopAppBarScrollBehavior,
-    snackBarHostState: SnackbarHostState
+    snackBarHostState: SnackbarHostState,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -48,8 +52,19 @@ fun NavGraphSetup(
         }
 
         composable<Routes.SearchScreen> {
+            val searchViewModel: SearchViewModel = hiltViewModel()
+            val searchedImages = searchViewModel.searchImages.collectAsLazyPagingItems()
             SearchScreen(
-                onBackArrowClick = {navController.navigateUp()}
+                snackbarHostState = snackBarHostState,
+                snackBarEvent = searchViewModel.snackBarEvent,
+                onBackArrowClick = {navController.navigateUp()},
+                onImageClick = { imageId->
+                    navController.navigate(Routes.FullImageScreen(imageId))
+                },
+                searchedImage = searchedImages,
+                onSearch = {searchViewModel.searchImages(it)},
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange
             )
         }
 

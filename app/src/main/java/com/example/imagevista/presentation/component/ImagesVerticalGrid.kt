@@ -11,15 +11,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import com.example.imagevista.domain.model.UnsplashImage
 
 @Composable
 fun ImagesVerticalGrid(
     modifier: Modifier = Modifier,
-    images: List<UnsplashImage?>,
+    images: LazyPagingItems<UnsplashImage>,
     onImageClick: (String) -> Unit,
     onImageDragStart: (UnsplashImage?) -> Unit,
-    onImageDragEnd: () -> Unit
+    onImageDragEnd: () -> Unit,
 ) {
     LazyVerticalStaggeredGrid(
         modifier = modifier,
@@ -28,20 +29,22 @@ fun ImagesVerticalGrid(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalItemSpacing = 10.dp
     ) {
-        items(images){image->
-           ImageCard(
-               image = image,
-               modifier = Modifier
-                   .clickable { image?.id?.let { onImageClick(it) } }
-                   .pointerInput(Unit) {
-                       detectDragGesturesAfterLongPress(
-                           onDragStart = {onImageDragStart(image)},
-                           onDragEnd = {onImageDragEnd()},
-                           onDragCancel = {onImageDragEnd()},
-                           onDrag = { _, _ -> }
-                       )
-                   }
-           )
+
+        items(images.itemCount) { index ->
+            val image = images[index]
+            ImageCard(
+                image = image,
+                modifier = Modifier
+                    .clickable { image?.id?.let { onImageClick(it) } }
+                    .pointerInput(Unit) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { onImageDragStart(image) },
+                            onDragEnd = { onImageDragEnd() },
+                            onDragCancel = { onImageDragEnd() },
+                            onDrag = { _, _ -> }
+                        )
+                    }
+            )
         }
     }
 }

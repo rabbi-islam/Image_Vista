@@ -71,6 +71,8 @@ class MainActivity : ComponentActivity() {
             ImageVistaTheme {
                 val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
+
+                var searchQuery by rememberSaveable{ mutableStateOf("") }
                 
 
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -92,7 +94,9 @@ class MainActivity : ComponentActivity() {
                     NavGraphSetup(
                         navController = navController,
                         scrollBehavior = scrollBehavior,
-                        snackBarHostState = snackbarHostState
+                        snackBarHostState = snackbarHostState,
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = {searchQuery = it}
                     )
 
                 }
