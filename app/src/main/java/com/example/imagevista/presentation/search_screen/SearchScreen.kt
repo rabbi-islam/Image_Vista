@@ -11,11 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,18 +35,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.example.imagevista.R
 import com.example.imagevista.domain.model.UnsplashImage
-import com.example.imagevista.presentation.component.ImageVistaTopAppBar
 import com.example.imagevista.presentation.component.ImagesVerticalGrid
 import com.example.imagevista.presentation.component.ZoomedImageCard
 import com.example.imagevista.presentation.util.SnackBarEvent
 import com.example.imagevista.presentation.util.searchKeywords
 import kotlinx.coroutines.delay
-import retrofit2.http.Query
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,9 +52,11 @@ fun SearchScreen(
     onSearch: (String) -> Unit,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    favoriteImageIds: List<String>,
     snackBarEvent: kotlinx.coroutines.flow.Flow<SnackBarEvent>,
     onImageClick: (String) -> Unit,
     onBackArrowClick: () -> Unit,
+    onToggleFavouriteStatus: (UnsplashImage) -> Unit
 ) {
     var showImagePreview by remember { mutableStateOf(false) }
     var activeImage by remember { mutableStateOf<UnsplashImage?>(null) }
@@ -149,7 +145,9 @@ fun SearchScreen(
                     activeImage = image
                     showImagePreview = true
                 },
-                onImageDragEnd = { showImagePreview = false }
+                onImageDragEnd = { showImagePreview = false },
+                onToggleFavouriteStatus = onToggleFavouriteStatus,
+                favoriteImageIds = favoriteImageIds
             )
         }
         ZoomedImageCard(

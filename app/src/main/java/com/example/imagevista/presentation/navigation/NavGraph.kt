@@ -4,13 +4,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.imagevista.presentation.favourite_screen.FavouriteScreen
+import com.example.imagevista.presentation.favourite_screen.FavouriteViewModel
 import com.example.imagevista.presentation.full_image_screen.FullImageScreen
 import com.example.imagevista.presentation.full_image_screen.FullImageViewModel
 import com.example.imagevista.presentation.home_screen.HomeScreen
@@ -33,13 +36,13 @@ fun NavGraphSetup(
         startDestination = Routes.HomeScreen
     ) {
         composable<Routes.HomeScreen> {
-            val viewmodel:HomeViewModel = hiltViewModel()
+            val viewmodel: HomeViewModel = hiltViewModel()
             HomeScreen(
-                snackbarHostState = snackBarHostState ,
+                snackbarHostState = snackBarHostState,
                 snackBarEvent = viewmodel.snackBarEvent,
                 scrollBehavior = scrollBehavior,
                 images = viewmodel.images,
-                onImageClick = {imageId->
+                onImageClick = { imageId ->
                     navController.navigate(Routes.FullImageScreen(imageId))
                 },
                 onSearchClick = {
@@ -54,48 +57,64 @@ fun NavGraphSetup(
         composable<Routes.SearchScreen> {
             val searchViewModel: SearchViewModel = hiltViewModel()
             val searchedImages = searchViewModel.searchImages.collectAsLazyPagingItems()
+            val favoriteImageIds by searchViewModel.favoriteImageIds.collectAsStateWithLifecycle()
             SearchScreen(
                 snackbarHostState = snackBarHostState,
                 snackBarEvent = searchViewModel.snackBarEvent,
-                onBackArrowClick = {navController.navigateUp()},
-                onImageClick = { imageId->
+                onBackArrowClick = { navController.navigateUp() },
+                onImageClick = { imageId ->
                     navController.navigate(Routes.FullImageScreen(imageId))
                 },
                 searchedImage = searchedImages,
-                onSearch = {searchViewModel.searchImages(it)},
+                onSearch = { searchViewModel.searchImages(it) },
                 searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange
+                onSearchQueryChange = onSearchQueryChange,
+                onToggleFavouriteStatus = { searchViewModel.toggleFavouriteStatus(it) },
+                favoriteImageIds = favoriteImageIds
             )
         }
 
         composable<Routes.FavouritesScreen> {
+            val favouriteViewModel: FavouriteViewModel = hiltViewModel()
+            val favouriteImages = favouriteViewModel.favoriteImages.collectAsLazyPagingItems()
+            val favoriteImageIds by favouriteViewModel.favoriteImageIds.collectAsStateWithLifecycle()
             FavouriteScreen(
-                onBackArrowClick = {navController.navigateUp()}
+                snackbarHostState = snackBarHostState,
+                favoriteImages = favouriteImages,
+                favoriteImageIds = favoriteImageIds,
+                snackBarEvent = favouriteViewModel.snackBarEvent,
+                onImageClick = { imageId ->
+                    navController.navigate(Routes.FullImageScreen(imageId))
+                },
+                onBackArrowClick = { navController.navigateUp() },
+                onToggleFavouriteStatus = { favouriteViewModel.toggleFavouriteStatus(it) },
+                onSearchClick = { navController.navigate(Routes.SearchScreen) },
+                scrollBehavior = scrollBehavior
             )
         }
 
         composable<Routes.FullImageScreen> {
-            val fullImageViewModel:FullImageViewModel = hiltViewModel()
+            val fullImageViewModel: FullImageViewModel = hiltViewModel()
             FullImageScreen(
-                snackbarHostState = snackBarHostState ,
+                snackbarHostState = snackBarHostState,
                 snackBarEvent = fullImageViewModel.snackBarEvent,
                 image = fullImageViewModel.image,
-                onBackArrowClick = {navController.navigateUp()},
-                onPhotographerImageClick = {profileLink->
+                onBackArrowClick = { navController.navigateUp() },
+                onPhotographerImageClick = { profileLink ->
                     navController.navigate(Routes.ProfileScreen(profileLink))
                 },
-                onImageDownloadClick = {url,title->
-                    fullImageViewModel.downloadImage(url,title)
+                onImageDownloadClick = { url, title ->
+                    fullImageViewModel.downloadImage(url, title)
                 }
 
             )
         }
 
-        composable<Routes.ProfileScreen> {backStackEntry->
+        composable<Routes.ProfileScreen> { backStackEntry ->
             val profileLink = backStackEntry.toRoute<Routes.ProfileScreen>().profileLink
             ProfileScreen(
                 profileLink = profileLink,
-                onBackClick = {navController.navigateUp()}
+                onBackClick = { navController.navigateUp() }
             )
         }
     }

@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.example.imagevista.R
 import com.example.imagevista.domain.model.UnsplashImage
 import com.example.imagevista.presentation.component.ImageVistaTopAppBar
-import com.example.imagevista.presentation.component.ImagesVerticalGrid
 import com.example.imagevista.presentation.component.ZoomedImageCard
 import com.example.imagevista.presentation.util.SnackBarEvent
 
