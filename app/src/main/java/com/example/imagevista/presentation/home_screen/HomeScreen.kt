@@ -20,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import com.example.imagevista.R
 import com.example.imagevista.domain.model.UnsplashImage
 import com.example.imagevista.presentation.component.ImageVistaTopAppBar
+import com.example.imagevista.presentation.component.ImagesVerticalGrid
 import com.example.imagevista.presentation.component.ZoomedImageCard
 import com.example.imagevista.presentation.util.SnackBarEvent
 
@@ -31,11 +33,13 @@ import com.example.imagevista.presentation.util.SnackBarEvent
 fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     snackBarEvent: kotlinx.coroutines.flow.Flow<SnackBarEvent>,
-    images: List<UnsplashImage>,
+    scrollBehavior: TopAppBarScrollBehavior,
+    images: LazyPagingItems<UnsplashImage>,
+    favoriteImageIds: List<String>,
     onImageClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     onFavClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior
+    onToggleFavouriteStatus: (UnsplashImage) -> Unit,
 ) {
 
     var showImagePreview by remember { mutableStateOf(false) }
@@ -58,15 +62,17 @@ fun HomeScreen(
                 onSearchClick = onSearchClick,
                 scrollBehavior = scrollBehavior
             )
-//            ImagesVerticalGrid(
-//                images = images,
-//                onImageClick = onImageClick,
-//                onImageDragStart = { image ->
-//                    activeImage = image
-//                    showImagePreview = true
-//                },
-//                onImageDragEnd = { showImagePreview = false }
-//            )
+            ImagesVerticalGrid(
+                images = images,
+                onImageClick = onImageClick,
+                onImageDragStart = { image ->
+                    activeImage = image
+                    showImagePreview = true
+                },
+                onImageDragEnd = { showImagePreview = false },
+                onToggleFavouriteStatus = onToggleFavouriteStatus,
+                favoriteImageIds = favoriteImageIds
+            )
         }
         FloatingActionButton(
             modifier = Modifier
